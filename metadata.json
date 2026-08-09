@@ -1,0 +1,7 @@
+{
+  "name": "WorldBox Launcher",
+  "description": "Mod launcher and manager for WorldBox on Android with GameBanana mod browser, profile manager, and compatibility checks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
