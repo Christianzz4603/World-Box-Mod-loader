@@ -52,8 +52,6 @@ class LauncherRepository(
         modDao.updateLoadOrder(id, order)
     }
 
-    suspend fun getModByGameBananaId(gbId: Long): ModEntity? = modDao.getModByGameBananaId(gbId)
-
     suspend fun createDefaultProfileIfNone() {
         val active = profileDao.getActiveProfileSync()
         if (active == null) {

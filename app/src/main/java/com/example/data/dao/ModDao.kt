@@ -15,9 +15,6 @@ interface ModDao {
     @Query("SELECT * FROM mods WHERE id = :id")
     suspend fun getModById(id: String): ModEntity?
 
-    @Query("SELECT * FROM mods WHERE gameBananaId = :gameBananaId")
-    suspend fun getModByGameBananaId(gameBananaId: Long): ModEntity?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMod(mod: ModEntity)
 

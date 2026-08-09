@@ -1,5 +1,8 @@
 package com.example.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,12 +23,22 @@ import com.example.data.entities.ModEntity
 import com.example.ui.theme.SuccessGreen
 import com.example.ui.theme.WarningAmber
 import com.example.ui.viewmodel.MainViewModel
+import com.example.ui.viewmodel.ModImportState
 
 @Composable
 fun ModsScreen(viewModel: MainViewModel) {
     val mods by viewModel.mods.collectAsState()
+    val modImportState by viewModel.modImportState.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var selectedModForDetails by remember { mutableStateOf<ModEntity?>(null) }
+
+    val modPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            viewModel.importModFromUri(uri)
+        }
+    }
 
     val filteredMods = remember(mods, searchQuery) {
         if (searchQuery.isBlank()) mods
@@ -67,15 +80,27 @@ fun ModsScreen(viewModel: MainViewModel) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Installed Mods (${mods.size})",
-                style = MaterialTheme.typography.titleLarge
-            )
-            Text(
-                text = "${mods.count { it.isEnabled }} Enabled",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Column {
+                Text(
+                    text = "Installed Mods (${mods.size})",
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text(
+                    text = "${mods.count { it.isEnabled }} Enabled",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Button(
+                onClick = { modPickerLauncher.launch(arrayOf("*/*")) },
+                shape = RoundedCornerShape(4.dp),
+                modifier = Modifier.testTag("import_mod_button")
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Import Mod", style = MaterialTheme.typography.labelLarge)
+            }
         }
 
         if (filteredMods.isEmpty()) {
@@ -102,10 +127,20 @@ fun ModsScreen(viewModel: MainViewModel) {
                     )
                     if (searchQuery.isEmpty()) {
                         Text(
-                            text = "Browse GameBanana to find and download WorldBox mods!",
+                            text = "Import mod archives (.zip, .ncmod, .json, etc.) via file selector.",
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Button(
+                            onClick = { modPickerLauncher.launch(arrayOf("*/*")) },
+                            shape = RoundedCornerShape(4.dp),
+                            modifier = Modifier.testTag("empty_state_import_button")
+                        ) {
+                            Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Select Mod File", style = MaterialTheme.typography.labelLarge)
+                        }
                     }
                 }
             }
@@ -133,6 +168,57 @@ fun ModsScreen(viewModel: MainViewModel) {
                 }
             }
         }
+    }
+
+    // Mod Import Dialogs
+    when (val state = modImportState) {
+        is ModImportState.Progress -> {
+            AlertDialog(
+                onDismissRequest = { /* Non-dismissable during active extraction */ },
+                shape = RoundedCornerShape(4.dp),
+                icon = { CircularProgressIndicator(modifier = Modifier.size(32.dp)) },
+                title = { Text("Importing Mod...", style = MaterialTheme.typography.titleMedium) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(state.status, style = MaterialTheme.typography.bodyMedium)
+                        LinearProgressIndicator(
+                            progress = { state.fraction },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {}
+            )
+        }
+        is ModImportState.Success -> {
+            AlertDialog(
+                onDismissRequest = { viewModel.resetModImportState() },
+                shape = RoundedCornerShape(4.dp),
+                icon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = SuccessGreen) },
+                title = { Text("Mod Imported!", style = MaterialTheme.typography.titleLarge) },
+                text = { Text(state.message, style = MaterialTheme.typography.bodyMedium) },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.resetModImportState() }) {
+                        Text("OK", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            )
+        }
+        is ModImportState.Error -> {
+            AlertDialog(
+                onDismissRequest = { viewModel.resetModImportState() },
+                shape = RoundedCornerShape(4.dp),
+                icon = { Icon(Icons.Default.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+                title = { Text("Import Failed", style = MaterialTheme.typography.titleLarge) },
+                text = { Text(state.message, style = MaterialTheme.typography.bodyMedium) },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.resetModImportState() }) {
+                        Text("Close", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            )
+        }
+        ModImportState.Idle -> {}
     }
 
     // Mod Detail Dialog

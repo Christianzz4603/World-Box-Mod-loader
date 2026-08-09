@@ -8,19 +8,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.screens.*
-import com.example.ui.viewmodel.GameBananaViewModel
 import com.example.ui.viewmodel.MainViewModel
-
-import androidx.compose.ui.text.style.TextOverflow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LauncherApp(
-    mainViewModel: MainViewModel = viewModel(),
-    gbViewModel: GameBananaViewModel = viewModel()
+    mainViewModel: MainViewModel = viewModel()
 ) {
     val selectedTab by mainViewModel.selectedTab.collectAsState()
 
@@ -32,9 +29,8 @@ fun LauncherApp(
                         text = when (selectedTab) {
                             0 -> "WorldBox Launcher"
                             1 -> "Mod Manager"
-                            2 -> "GameBanana Mods"
-                            3 -> "Mod Profiles"
-                            4 -> "Launcher Settings"
+                            2 -> "Mod Profiles"
+                            3 -> "Launcher Settings"
                             else -> "WorldBox Launcher"
                         },
                         fontWeight = FontWeight.Bold,
@@ -84,20 +80,6 @@ fun LauncherApp(
                 NavigationBarItem(
                     selected = selectedTab == 2,
                     onClick = { mainViewModel.setSelectedTab(2) },
-                    icon = { Icon(Icons.Default.CloudDownload, contentDescription = "GameBanana") },
-                    label = {
-                        Text(
-                            text = "GameBanana",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            softWrap = false
-                        )
-                    },
-                    modifier = Modifier.testTag("nav_tab_gamebanana")
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 3,
-                    onClick = { mainViewModel.setSelectedTab(3) },
                     icon = { Icon(Icons.Default.Tune, contentDescription = "Profiles") },
                     label = {
                         Text(
@@ -110,8 +92,8 @@ fun LauncherApp(
                     modifier = Modifier.testTag("nav_tab_profiles")
                 )
                 NavigationBarItem(
-                    selected = selectedTab == 4,
-                    onClick = { mainViewModel.setSelectedTab(4) },
+                    selected = selectedTab == 3,
+                    onClick = { mainViewModel.setSelectedTab(3) },
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                     label = {
                         Text(
@@ -133,9 +115,8 @@ fun LauncherApp(
             when (selectedTab) {
                 0 -> HomeScreen(viewModel = mainViewModel, onNavigateToTab = { mainViewModel.setSelectedTab(it) })
                 1 -> ModsScreen(viewModel = mainViewModel)
-                2 -> GameBananaScreen(gbViewModel = gbViewModel, mainViewModel = mainViewModel)
-                3 -> ProfilesScreen(viewModel = mainViewModel)
-                4 -> SettingsScreen(viewModel = mainViewModel)
+                2 -> ProfilesScreen(viewModel = mainViewModel)
+                3 -> SettingsScreen(viewModel = mainViewModel)
             }
         }
     }

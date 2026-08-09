@@ -20,7 +20,6 @@ data class ModEntity(
     val targetGameVersion: String,
     val dateAdded: Long = System.currentTimeMillis(),
     val iconUrl: String? = null,
-    val gameBananaId: Long? = null,
     val fileSize: Long = 0L,
     val isEnabled: Boolean = true,
     val loadOrder: Int = 0

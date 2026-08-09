@@ -41,8 +41,10 @@ class WorldBoxDetector(private val context: Context) {
                 }
 
                 val appInfo = packageInfo.applicationInfo ?: continue
-                val label = pm.getApplicationLabel(appInfo).toString()
-                val icon = pm.getApplicationIcon(appInfo)
+                if (!appInfo.enabled) continue
+
+                val label = try { pm.getApplicationLabel(appInfo).toString() } catch (e: Exception) { "WorldBox" }
+                val icon = try { pm.getApplicationIcon(appInfo) } catch (e: Exception) { null }
                 val versionName = packageInfo.versionName ?: "Unknown"
                 val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     packageInfo.longVersionCode

@@ -28,6 +28,13 @@ sealed class ApkImportState {
     data class Error(val message: String) : ApkImportState()
 }
 
+sealed class ModImportState {
+    object Idle : ModImportState()
+    data class Progress(val fraction: Float, val status: String) : ModImportState()
+    data class Success(val message: String) : ModImportState()
+    data class Error(val message: String) : ModImportState()
+}
+
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val database = AppDatabase.getInstance(application)
@@ -73,6 +80,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _apkImportState = MutableStateFlow<ApkImportState>(ApkImportState.Idle)
     val apkImportState: StateFlow<ApkImportState> = _apkImportState.asStateFlow()
+
+    private val _modImportState = MutableStateFlow<ModImportState>(ModImportState.Idle)
+    val modImportState: StateFlow<ModImportState> = _modImportState.asStateFlow()
 
     private val _selectedTab = MutableStateFlow(0)
     val selectedTab: StateFlow<Int> = _selectedTab.asStateFlow()
@@ -182,6 +192,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resetApkImportState() {
         _apkImportState.value = ApkImportState.Idle
+    }
+
+    fun importModFromUri(uri: Uri) {
+        viewModelScope.launch {
+            _modImportState.value = ModImportState.Progress(0.0f, "Preparing mod import...")
+            val gameVer = _worldBoxInfo.value.versionName
+            val result = modInstaller.installModFromUri(uri, gameVer) { fraction, msg ->
+                _modImportState.value = ModImportState.Progress(fraction, msg)
+            }
+            when (result) {
+                is InstallResult.Success -> {
+                    _modImportState.value = ModImportState.Success(result.message)
+                    repository.log("SUCCESS", "ModInstaller", result.message)
+                }
+                is InstallResult.Failure -> {
+                    _modImportState.value = ModImportState.Error(result.reason)
+                    repository.log("ERROR", "ModInstaller", result.reason)
+                }
+            }
+        }
+    }
+
+    fun resetModImportState() {
+        _modImportState.value = ModImportState.Idle
     }
 
     fun clearManagedApk() {

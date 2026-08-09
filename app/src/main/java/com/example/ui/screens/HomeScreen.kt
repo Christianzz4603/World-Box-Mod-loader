@@ -384,14 +384,14 @@ fun HomeScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Icon(Icons.Default.CloudDownload, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Text("GameBanana", style = MaterialTheme.typography.titleLarge, maxLines = 1, softWrap = false)
-                        Text("Browse Mods", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, softWrap = false)
+                        Icon(Icons.Default.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Text("Profiles", style = MaterialTheme.typography.titleLarge, maxLines = 1, softWrap = false)
+                        Text("Mod Sets", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, softWrap = false)
                     }
                 }
 
                 OutlinedCard(
-                    onClick = { onNavigateToTab(4) },
+                    onClick = { onNavigateToTab(3) },
                     shape = RoundedCornerShape(4.dp),
                     border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.surfaceVariant),
                     modifier = Modifier.weight(1f)
@@ -461,7 +461,7 @@ fun HomeScreen(
                         Button(
                             onClick = {
                                 viewModel.resetLaunchState()
-                                onNavigateToTab(4)
+                                onNavigateToTab(3)
                             },
                             shape = RoundedCornerShape(4.dp)
                         ) {
