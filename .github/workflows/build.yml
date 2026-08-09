@@ -1,3 +1,4 @@
+# Fix Gradle Wrapper validation and build workflow
 name: Build Android Application
 
 on:
